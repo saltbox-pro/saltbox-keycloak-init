@@ -9,8 +9,7 @@ class ClientManager(BaseManager):
     async def ensure_client(self, client: Client) -> str:
         client_uuid = await self.admin.a_get_client_id(client.client_id)
         if client_uuid:
-            msg = f'Client {client.client_id!r} already exists with UUID {client_uuid!r}'
-            logger.info(msg)
+            logger.info(f'Client {client.client_id!r} already exists with UUID {client_uuid!r}')
             return client_uuid
 
         payload = {
@@ -20,10 +19,8 @@ class ClientManager(BaseManager):
         }
         await self.admin.a_create_client(payload, skip_exists=False)
         client_uuid = await self.admin.a_get_client_id(client.client_id)
-        
-        msg = f'Client {client.client_id!r} created with UUID {client_uuid!r}'
-        logger.info(msg)
 
+        logger.info(f'Client {client.client_id!r} created with UUID {client_uuid!r}')
         return client_uuid
 
     async def ensure_client_roles(
@@ -34,8 +31,7 @@ class ClientManager(BaseManager):
         for role in roles:
             try:
                 await self.admin.a_get_client_role(client_uuid, role.name)
-                msg = f'Role {role.name!r} already exists for client UUID {client_uuid!r}'
-                logger.info(msg)
+                logger.info(f'Role {role.name!r} already exists for client UUID {client_uuid!r}')
             except KeycloakGetError:
                 await self._create_client_role(client_uuid, role)
 
@@ -53,10 +49,11 @@ class ClientManager(BaseManager):
             payload,
             skip_exists=False
         )
-        msg = f'Role {role.name!r} created for client UUID {client_uuid!r}'
-        logger.info(msg)
-    
+        logger.info(f'Role {role.name!r} created for client UUID {client_uuid!r}')
+
     async def update_direct_access(self, client_uuid: str, enabled: bool) -> None:
-        msg = f'Setting directAccessGrantsEnabled={enabled!r} for client UUID {client_uuid!r}'
-        logger.info(msg)
-        await self.admin.a_update_client(client_uuid, {'directAccessGrantsEnabled': enabled})
+        logger.info(f'Setting directAccessGrantsEnabled={enabled!r} for client UUID {client_uuid!r}')
+
+        client_data = await self.admin.a_get_client(client_uuid)
+        client_data['directAccessGrantsEnabled'] = enabled
+        await self.admin.a_update_client(client_uuid, client_data)

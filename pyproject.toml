@@ -1,10 +1,17 @@
 [project]
-dynamic = ["dependencies", "version"]
+dynamic = ["version"]
 name = "saltbox-keycloak-init"
 requires-python = ">=3.12"
 license = { file = 'LICENSE.txt' }
 description = ""
 readme = "README.md"
+dependencies = [
+    "setuptools==82.0.1",
+    "setuptools-scm==10.0.5",
+    "python-keycloak==7.1.1",
+    "pydantic==2.12.5",
+    "pydantic-settings==2.13.1",
+]
 
 [project.scripts]
 saltbox-keycloak-init = 'saltbox_keycloak_init.main:main'
@@ -14,11 +21,6 @@ Homepage = "https://saltbox.pro"
 Documentation = "https://saltbox.pro"
 Repository = "https://dev.saltbox.pro/saltbox/saltbox-keycloak-init"
 
-dependencies = [
-    "pydantic-settings==2.13.1",
-    "python-keycloak==7.1.1",
-]
-
 [build-system]
 requires = ["setuptools>=75.1.0", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
@@ -26,9 +28,14 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools]
 include-package-data = true
 
+[tool.setuptools.packages.find]
+include = ["saltbox_keycloak_init*"]
+
 [tool.setuptools.dynamic]
-dependencies = { file = ["uv.lock"] }
 version = { attr = "saltbox_keycloak_init.__version__" }
+
+[tool.setuptools_scm]
+fallback_version = "0.0.0"
 
 [tool.ruff]
 target-version = "py312"

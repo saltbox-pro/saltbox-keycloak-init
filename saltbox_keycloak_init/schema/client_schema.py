@@ -1,17 +1,17 @@
 from pydantic import BaseModel
 
-GRAFANA_ADMIN_ROLE = 'grafana_admin'
+GRAFANA_ADMIN_ROLE: str = 'grafana_admin'
 
 SALTBOX_ADMIN_ROLES: list[str] = [
-	GRAFANA_ADMIN_ROLE,
     'saltbox_admin',
-	'collections_admin',
-	'tasks_admin',
-	'jobs_admin',
- 	'test_common',
-	'masters_admin',
-	'scheduler_admin'
+    'collections_admin',
+    'tasks_admin',
+    'jobs_admin',
+    'test_common',
+    'masters_admin',
+    'scheduler_admin'
 ]
+
 
 class ClientRole(BaseModel):
     name: str

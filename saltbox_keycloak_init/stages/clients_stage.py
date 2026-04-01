@@ -7,7 +7,7 @@ from saltbox_keycloak_init.schema.client_schema import GRAFANA_ADMIN_ROLE, Clien
 def build_saltbox_client(settings: Settings) -> Client:
     return Client(
         client_id=settings.keycloak_client,
-        secret=settings.keycloak_client_password,
+        secret=settings.keycloak_client_saltbox_core_password,
         config=SALTBOX_CLIENT_CONFIG,
         roles=[
             ClientRole(
@@ -31,7 +31,7 @@ def build_saltbox_client(settings: Settings) -> Client:
 def build_grafana_client(settings: Settings) -> Client:
     return Client(
         client_id=settings.grafana_client,
-        secret=settings.grafana_password,
+        secret=settings.keycloak_client_grafana_password,
         config=GRAFANA_CLIENT_CONFIG,
         roles=[ClientRole(
             name=GRAFANA_ADMIN_ROLE, description='Grafana admin role')],
@@ -42,12 +42,13 @@ async def setup_clients(
     client_mgr: ClientManager,
     settings: Settings,
 ) -> tuple[str, str | None]:
+
     saltbox_client = build_saltbox_client(settings)
     saltbox_uuid = await client_mgr.ensure_client(saltbox_client)
     await client_mgr.ensure_client_roles(saltbox_uuid, saltbox_client.roles)
 
     grafana_uuid: str | None = None
-    if settings.grafana_client and settings.grafana_password:
+    if settings.grafana_client and settings.keycloak_client_grafana_password:
         grafana_client = build_grafana_client(settings)
         grafana_uuid = await client_mgr.ensure_client(grafana_client)
         await client_mgr.ensure_client_roles(grafana_uuid, grafana_client.roles)

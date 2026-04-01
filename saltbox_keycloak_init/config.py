@@ -1,9 +1,9 @@
 import logging.config
+from logging import _levelToName as LOG_LEVELS  # type: ignore
 from typing import Annotated, Any
 
 from pydantic import AfterValidator, BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from logging import _levelToName as LOG_LEVELS  # type: ignore
 
 
 def validate_log_level(value: str) -> str:
@@ -22,29 +22,29 @@ class Settings(BaseSettings):
     keycloak_realm: str
     keycloak_client: str
     keycloak_admin_password: str
-    keycloak_client_password: str
+    keycloak_client_saltbox_core_password: str
 
-    saltbox_user_name: str = ''
-    saltbox_user_email: str = ''
-    saltbox_user_firstname: str = ''
-    saltbox_user_lastname: str = ''
+    keycloak_user_name: str = ''
+    keycloak_user_email: str = ''
+    keycloak_user_firstname: str = ''
+    keycloak_user_lastname: str = ''
     saltbox_user_password: str = ''
 
-    saltbox_admin_name: str = ''
-    saltbox_admin_email: str = ''
-    saltbox_admin_firstname: str = ''
-    saltbox_admin_lastname: str = ''
+    keycloak_admin_name: str = ''
+    keycloak_admin_email: str = ''
+    keycloak_admin_firstname: str = ''
+    keycloak_admin_lastname: str = ''
     saltbox_admin_password: str = ''
 
     grafana_client: str = ''
-    grafana_password: str = ''
+    keycloak_client_grafana_password: str = ''
 
-    client_direct_access: bool = False
-    strict_role_check: bool = False
+    keycloak_client_direct_access: bool = False
+    keycloak_strict_role_check: bool = True
 
     log_level: LogLevelStr = 'INFO'
 
-    model_config = SettingsConfigDict(env_file='../.env', extra='ignore')
+    model_config = SettingsConfigDict(env_file='../.env', secrets_dir='/run/secrets', extra='ignore')
 
 
 SETTINGS = Settings()
@@ -52,14 +52,12 @@ _main_logger_name = __name__.split('.')[0]
 
 
 class LogConfig(BaseModel):
-    format: str = '%(levelprefix)s [%(filename)s:%(lineno)d] %(message)s'
     level: LogLevelStr = SETTINGS.log_level
     version: int = 1
     formatters: dict[str, Any] = {
         'default': {
-            '()': 'uvicorn.logging.DefaultFormatter',
             'datefmt': '%Y-%m-%d %H:%M:%S',
-            'fmt': '%(levelprefix)s [%(filename)s:%(lineno)d] %(message)s',
+            'format': '%(levelname)s [%(filename)s:%(lineno)d] %(message)s',
         },
     }
     handlers: dict[str, Any] = {

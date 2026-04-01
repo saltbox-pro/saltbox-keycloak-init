@@ -25,9 +25,7 @@ class UserManager(BaseManager):
             exist_ok=False,
         )
         await self.admin.a_set_user_password(user_id, password=user.password, temporary=False)
-
-        msg = f'User {user.username!r} created in realm {self.settings.keycloak_realm!r}'
-        logger.info(msg)
+        logger.info(f'User {user.username!r} created in realm {self.settings.keycloak_realm!r}')
 
         return user_id
 
@@ -38,8 +36,6 @@ class UserManager(BaseManager):
         role_names: list[str],
     ) -> None:
         for role_name in role_names:
-            role_repr = await self.admin.a_get_client_role(client_uuid, role_name)
-            await self.admin.a_assign_client_role(user_id, client_uuid, [role_repr])
-            
-            msg = f'Role {role_name!r} from client UUID {client_uuid!r} assigned to user {user_id!r}'
-            logger.info(msg)
+            role_representation = await self.admin.a_get_client_role(client_uuid, role_name)
+            await self.admin.a_assign_client_role(user_id, client_uuid, [role_representation])
+            logger.info(f'Role {role_name!r} from client UUID {client_uuid!r} assigned to user {user_id!r}')
