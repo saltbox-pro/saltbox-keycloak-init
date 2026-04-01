@@ -16,7 +16,7 @@ WORKDIR /build
 COPY pyproject.toml LICENSE.txt README.md ./
 COPY saltbox_keycloak_init/ saltbox_keycloak_init/
 
-RUN python3 -m pip install --no-cache-dir --prefix=/install .
+RUN python3 -m pip install --no-cache-dir .
 
 
 FROM "$BASE_IMG" AS keycloak-init
@@ -52,7 +52,7 @@ ENV KEYCLOAK_ADMIN_FIRSTNAME=''
 ENV KEYCLOAK_ADMIN_LASTNAME=''
 
 ENV KEYCLOAK_CLIENT_DIRECT_ACCESS='false'
-ENV KEYCLOAK_STRICT_ROLE_CHECK='false'
+ENV KEYCLOAK_STRICT_ROLE_CHECK='true'
 ENV LOG_LEVEL='INFO'
 
 ENTRYPOINT ["saltbox-keycloak-init"]
