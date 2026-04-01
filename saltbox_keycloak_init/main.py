@@ -1,6 +1,6 @@
 import asyncio
 
-from keycloak import KeycloakAdmin
+from keycloak import KeycloakAdmin, KeycloakAuthenticationError
 
 from saltbox_keycloak_init.config import SETTINGS, logger
 from saltbox_keycloak_init.manage.client_manager import ClientManager
@@ -61,7 +61,24 @@ async def init() -> None:
         )
 
 
+async def init_with_retry(retries: int = 10, delay: float = 5.0) -> None:
+    for attempt in range(1, retries + 1):
+        try:
+            await init()
+            return
+        except KeycloakAuthenticationError as ex:
+            if attempt == retries:
+                raise
+
+            msg = (
+                f'Attempt {attempt}/{retries} failed: {ex}. ' +
+                f'Retrying in {delay} sec ...'
+            )
+            logger.warning(msg)
+            await asyncio.sleep(delay)
+
+
 def main() -> None:
     logger.info('======= Starting Keycloak initialization =======')
-    asyncio.run(init())
+    asyncio.run(init_with_retry())
     logger.info('======= Keycloak initialization completed =======')
