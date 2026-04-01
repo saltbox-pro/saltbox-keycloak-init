@@ -1,24 +1,5 @@
 ARG BASE_IMG="registry.altlinux.org/alt/alt:p11"
 
-FROM "$BASE_IMG" AS builder
-
-RUN \
-  --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
-<<EOF
-set -e
-mkdir --parents /var/cache/apt/archives/partial/ /var/lib/apt/lists/partial/
-apt-get update
-apt-get install -y python3-module-pip glibc-pthread
-EOF
-
-WORKDIR /build
-COPY pyproject.toml LICENSE.txt README.md ./
-COPY saltbox_keycloak_init/ saltbox_keycloak_init/
-
-RUN python3 -m pip install --no-cache-dir .
-
-
 FROM "$BASE_IMG" AS keycloak-init
 LABEL version="1.2"
 LABEL release="0"
@@ -33,7 +14,11 @@ apt-get update
 apt-get install -y java-21-openjdk wget python3-module-pip glibc-pthread
 EOF
 
-COPY --from=builder /install /usr/local
+WORKDIR /build
+COPY pyproject.toml LICENSE.txt README.md ./
+COPY saltbox_keycloak_init/ saltbox_keycloak_init/
+RUN python3 -m pip install --no-cache-dir .
+WORKDIR /
 
 ENV KEYCLOAK_URL=''
 ENV KEYCLOAK_REALM=''
