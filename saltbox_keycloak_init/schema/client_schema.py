@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+import dataclasses
 
 GRAFANA_ADMIN_ROLE: str = 'grafana_admin'
 
@@ -13,12 +13,14 @@ SALTBOX_ADMIN_ROLES: list[str] = [
 ]
 
 
-class ClientRole(BaseModel):
+@dataclasses.dataclass
+class ClientRole:
     name: str
     description: str
 
 
-class Client(BaseModel):
+@dataclasses.dataclass
+class Client:
     client_id: str
     secret: str
     roles: list[ClientRole]

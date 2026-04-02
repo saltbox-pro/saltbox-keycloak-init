@@ -1,0 +1,14 @@
+.git
+.gitignore
+
+.idea
+.ruff_cache
+*.egg-info
+
+.env
+.venv/
+venv/
+
+build
+Dockerfile
+.dockerignore

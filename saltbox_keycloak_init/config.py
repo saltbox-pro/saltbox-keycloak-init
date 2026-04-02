@@ -1,23 +1,12 @@
 import logging.config
-from logging import _levelToName as LOG_LEVELS  # type: ignore
-from typing import Annotated, Any
+import os
+from pathlib import Path
+from typing import Any
 
-from pydantic import AfterValidator, BaseModel
-from pydantic_settings import BaseSettings, SettingsConfigDict
-
-
-def validate_log_level(value: str) -> str:
-    value = value.upper()
-    if value not in LOG_LEVELS.values():
-        msg = f'Unexpected log level: {value}'
-        raise ValueError(msg)
-    return value
+DOCKER_SECRETS_DIR = '/run/secrets'
 
 
-LogLevelStr = Annotated[str, AfterValidator(validate_log_level)]
-
-
-class Settings(BaseSettings):
+class Settings:
     keycloak_url: str
     keycloak_realm: str
     keycloak_client: str
@@ -42,40 +31,66 @@ class Settings(BaseSettings):
     keycloak_client_direct_access: bool = False
     keycloak_strict_role_check: bool = True
 
-    log_level: LogLevelStr = 'INFO'
+    keycloak_init_log_level: str = 'INFO'
 
-    model_config = SettingsConfigDict(env_file='../.env', secrets_dir='/run/secrets', extra='ignore')
+    def __init__(self):
+        for field, field_type in self.__annotations__.items():
+            env = field.upper()
+            raw_value = os.environ.get(env)
+            if not raw_value:
+                raw_value = self._extract_secret(field)
+
+            if raw_value is None:
+                msg = f'Missing required {env!r} env'
+                raise ValueError(msg)
+            else:
+                value = self._cast_raw_env(raw_value, field_type)
+
+            setattr(self, field, value)
+
+    @staticmethod
+    def _cast_raw_env(raw_value: str, value_type: type) -> Any:
+        if value_type is bool:
+            return raw_value.lower() == 'true'
+        if value_type is int:
+            return int(raw_value)
+        return raw_value
+
+    @staticmethod
+    def _extract_secret(sub_path: str):
+        path = Path(f'{DOCKER_SECRETS_DIR}/{ sub_path }')
+        if path.exists():
+            with Path.open(path) as f:
+                return f.read().rstrip('\n')
+        return None
 
 
 SETTINGS = Settings()
 _main_logger_name = __name__.split('.')[0]
 
 
-class LogConfig(BaseModel):
-    level: LogLevelStr = SETTINGS.log_level
-    version: int = 1
-    formatters: dict[str, Any] = {
-        'default': {
-            'datefmt': '%Y-%m-%d %H:%M:%S',
-            'format': '%(levelname)s [%(filename)s:%(lineno)d] %(message)s',
+LOG_CONFIG = {
+    "version": 1,
+    "formatters": {
+        "default": {
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+            "format": "%(levelname)s [%(filename)s:%(lineno)d] %(message)s",
         },
-    }
-    handlers: dict[str, Any] = {
-        'default': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'default',
-            'stream': 'ext://sys.stderr',
+    },
+    "handlers": {
+        "default": {
+            "class": "logging.StreamHandler",
+            "formatter": "default",
+            "stream": "ext://sys.stderr",
         },
-    }
-    loggers: dict[str, Any] = {
+    },
+    "loggers": {
         _main_logger_name: {
-            'handlers': ['default'],
-            'level': SETTINGS.log_level,
-            'propagate': False,
+            "handlers": ["default"],
+            "level": SETTINGS.keycloak_init_log_level.upper(),
+            "propagate": False,
         },
-    }
-
-
-LOG_CONFIG = LogConfig()
-logging.config.dictConfig(LOG_CONFIG.model_dump())
+    },
+}
+logging.config.dictConfig(LOG_CONFIG)
 logger = logging.getLogger(name=_main_logger_name)

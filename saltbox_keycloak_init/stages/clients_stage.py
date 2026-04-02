@@ -1,14 +1,28 @@
+import json
+from typing import Any
+
+import aiofiles
+
 from saltbox_keycloak_init.config import Settings
 from saltbox_keycloak_init.manage.client_manager import ClientManager
-from saltbox_keycloak_init.schema.client_configs import GRAFANA_CLIENT_CONFIG, SALTBOX_CLIENT_CONFIG
 from saltbox_keycloak_init.schema.client_schema import GRAFANA_ADMIN_ROLE, Client, ClientRole
 
+PATH_TO_GRAFANA_CLIENT_CONFIG = 'saltbox_keycloak_init/client.d/grafana_client.json'
+PATH_TO_SALTBOX_CORE_CLIENT_CONFIG = 'saltbox_keycloak_init/client.d/saltbox_core_client.json'
 
-def build_saltbox_client(settings: Settings) -> Client:
+
+async def _load_client_config(path: str) -> dict[str, Any]:
+    async with aiofiles.open(path) as f:
+        payload = await f.read()
+        return json.loads(payload)
+
+
+async def _build_saltbox_client(settings: Settings) -> Client:
+    config = await _load_client_config(PATH_TO_SALTBOX_CORE_CLIENT_CONFIG)
     return Client(
         client_id=settings.keycloak_client,
         secret=settings.keycloak_client_saltbox_core_password,
-        config=SALTBOX_CLIENT_CONFIG,
+        config=config,
         roles=[
             ClientRole(
                 name='collections_admin', description='Collections admin role'),
@@ -28,11 +42,12 @@ def build_saltbox_client(settings: Settings) -> Client:
     )
 
 
-def build_grafana_client(settings: Settings) -> Client:
+async def _build_grafana_client(settings: Settings) -> Client:
+    config = await _load_client_config(PATH_TO_GRAFANA_CLIENT_CONFIG)
     return Client(
         client_id=settings.grafana_client,
         secret=settings.keycloak_client_grafana_password,
-        config=GRAFANA_CLIENT_CONFIG,
+        config=config,
         roles=[ClientRole(
             name=GRAFANA_ADMIN_ROLE, description='Grafana admin role')],
     )
@@ -43,13 +58,13 @@ async def setup_clients(
     settings: Settings,
 ) -> tuple[str, str | None]:
 
-    saltbox_client = build_saltbox_client(settings)
+    saltbox_client = await _build_saltbox_client(settings)
     saltbox_uuid = await client_mgr.ensure_client(saltbox_client)
     await client_mgr.ensure_client_roles(saltbox_uuid, saltbox_client.roles)
 
     grafana_uuid: str | None = None
     if settings.grafana_client and settings.keycloak_client_grafana_password:
-        grafana_client = build_grafana_client(settings)
+        grafana_client = await _build_grafana_client(settings)
         grafana_uuid = await client_mgr.ensure_client(grafana_client)
         await client_mgr.ensure_client_roles(grafana_uuid, grafana_client.roles)
 
