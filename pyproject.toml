@@ -29,6 +29,9 @@ include-package-data = true
 [tool.setuptools.packages.find]
 include = ["saltbox_keycloak_init*"]
 
+[tool.setuptools.package-data]
+"saltbox_keycloak_init" = ["client.d/*.json"]
+
 [tool.setuptools.dynamic]
 version = { attr = "saltbox_keycloak_init.__version__" }
 
