@@ -74,7 +74,7 @@ LOG_CONFIG = {
     "formatters": {
         "default": {
             "datefmt": "%Y-%m-%d %H:%M:%S",
-            "format": "%(levelname)s [%(filename)s:%(lineno)d] %(message)s",
+            "format": "%(asctime)s | %(levelname)s [%(filename)s:%(lineno)d] %(message)s",
         },
     },
     "handlers": {
