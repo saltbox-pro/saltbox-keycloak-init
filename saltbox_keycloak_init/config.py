@@ -25,7 +25,7 @@ class Settings:
     keycloak_admin_lastname: str = ''
     saltbox_admin_password: str = ''
 
-    grafana_client: str = ''
+    keycloak_grafana_client: str = ''
     keycloak_client_grafana_password: str = ''
 
     keycloak_client_direct_access: bool = False
