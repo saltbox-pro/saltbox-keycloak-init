@@ -11,10 +11,11 @@ from saltbox_keycloak_init.stages.verify_stage import verify_roles
 
 
 async def create_user_realm() -> KeycloakAdmin:
+    admin_password = await SETTINGS.keycloak_admin_secret_meta.value
     master_realm = KeycloakAdmin(
         server_url=SETTINGS.keycloak_url.rstrip('/') + '/',
         username='admin',
-        password=SETTINGS.keycloak_admin_password,
+        password=admin_password,
         realm_name='master',
         verify=True,
     )
@@ -38,7 +39,6 @@ async def create_user_realm() -> KeycloakAdmin:
 async def init() -> None:
 
     user_realm = await create_user_realm()
-
     client_manager = ClientManager(user_realm, SETTINGS)
     saltbox_uuid, grafana_uuid = await setup_clients(client_manager, SETTINGS)
 

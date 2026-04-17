@@ -19,11 +19,11 @@ async def _load_client_config(path: Path) -> dict[str, Any]:
         return json.loads(payload)
 
 
-async def _build_saltbox_client(settings: Settings) -> Client:
+async def _build_saltbox_client(client_id: str, secret: str) -> Client:
     config = await _load_client_config(PATH_TO_SALTBOX_CORE_CLIENT_CONFIG)
     return Client(
-        client_id=settings.keycloak_client,
-        secret=settings.keycloak_client_saltbox_core_password,
+        client_id=client_id,
+        secret=secret,
         config=config,
         roles=[
             ClientRole(
@@ -44,11 +44,11 @@ async def _build_saltbox_client(settings: Settings) -> Client:
     )
 
 
-async def _build_grafana_client(settings: Settings) -> Client:
+async def _build_grafana_client(secret: str) -> Client:
     config = await _load_client_config(PATH_TO_GRAFANA_CLIENT_CONFIG)
     return Client(
-        client_id=settings.grafana_client,
-        secret=settings.keycloak_client_grafana_password,
+        client_id='grafana',
+        secret=secret,
         config=config,
         roles=[ClientRole(
             name=GRAFANA_ADMIN_ROLE, description='Grafana admin role')],
@@ -60,13 +60,17 @@ async def setup_clients(
     settings: Settings,
 ) -> tuple[str, str | None]:
 
-    saltbox_client = await _build_saltbox_client(settings)
+    saltbox_client_id = settings.keycloak_client
+    saltbox_secret = await settings.keycloak_client_saltbox_core_secret_meta.value
+    saltbox_client = await _build_saltbox_client(saltbox_client_id, saltbox_secret)
     saltbox_uuid = await client_mgr.ensure_client(saltbox_client)
     await client_mgr.ensure_client_roles(saltbox_uuid, saltbox_client.roles)
 
     grafana_uuid: str | None = None
-    if settings.grafana_client and settings.keycloak_client_grafana_password:
-        grafana_client = await _build_grafana_client(settings)
+    grafana_secret = await settings.keycloak_client_grafana_secret_meta.value
+
+    if grafana_secret:
+        grafana_client = await _build_grafana_client(grafana_secret)
         grafana_uuid = await client_mgr.ensure_client(grafana_client)
         await client_mgr.ensure_client_roles(grafana_uuid, grafana_client.roles)
 

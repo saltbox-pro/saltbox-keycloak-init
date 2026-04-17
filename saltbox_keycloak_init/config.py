@@ -1,32 +1,54 @@
+import dataclasses
 import logging.config
 import os
-from pathlib import Path
 from typing import Any
 
-DOCKER_SECRETS_DIR = '/run/secrets'
+import anyio
+
+
+@dataclasses.dataclass(frozen=True)
+class SecretMeta:
+    name: str
+    is_addon_module: bool = False
+    base_dir: anyio.Path = '/run/secrets'
+
+    @property
+    async def absolute_path(self) -> anyio.Path:
+        return anyio.Path(f'{self.base_dir}/{self.name}')
+
+    @property
+    async def value(self) -> str | None:
+        path = await self.absolute_path
+        if await path.exists():
+            trailing_secret = await path.read_text()
+            return trailing_secret.rstrip('\n')
+        if not self.is_addon_module:
+            msg = f'Secret {path!r} not exist'
+            raise ValueError(msg)
+        return None
 
 
 class Settings:
-    keycloak_url: str
-    keycloak_realm: str
-    keycloak_client: str
-    keycloak_admin_password: str
-    keycloak_client_saltbox_core_password: str
+    keycloak_url: str = ''
+    keycloak_realm: str = ''
+    keycloak_client: str = ''
+    keycloak_admin_secret_meta: SecretMeta = SecretMeta('keycloak_admin_password')
+    keycloak_client_saltbox_core_secret_meta: SecretMeta = SecretMeta('keycloak_client_saltbox_core_password')
 
     keycloak_user_name: str = ''
     keycloak_user_email: str = ''
     keycloak_user_firstname: str = ''
     keycloak_user_lastname: str = ''
-    saltbox_user_password: str = ''
+    saltbox_user_secret_meta: SecretMeta = SecretMeta('saltbox_user_password')
 
     keycloak_admin_name: str = ''
     keycloak_admin_email: str = ''
     keycloak_admin_firstname: str = ''
     keycloak_admin_lastname: str = ''
-    saltbox_admin_password: str = ''
+    keycloak_saltbox_admin_secret_meta: SecretMeta = SecretMeta('saltbox_admin_password')
 
-    keycloak_grafana_client: str = ''
-    keycloak_client_grafana_password: str = ''
+    keycloak_client_grafana_secret_meta: SecretMeta = SecretMeta(
+        'keycloak_client_grafana_password', is_addon_module=True)
 
     keycloak_client_direct_access: bool = False
     keycloak_strict_role_check: bool = True
@@ -35,34 +57,19 @@ class Settings:
 
     def __init__(self):
         for field, field_type in self.__annotations__.items():
-            env = field.upper()
-            raw_value = os.environ.get(env)
-            if not raw_value:
-                raw_value = self._extract_secret(field)
+            field_to_uppercase = field.upper()
+            raw_env = os.environ.get(field_to_uppercase)
+            if raw_env is not None:
+                env = self._cast_raw_env(raw_env, field_type)
+                setattr(self, field, env)
 
-            if raw_value is None:
-                msg = f'Missing required {env!r} env'
-                raise ValueError(msg)
-            else:
-                value = self._cast_raw_env(raw_value, field_type)
-
-            setattr(self, field, value)
-
-    @staticmethod
-    def _cast_raw_env(raw_value: str, value_type: type) -> Any:
+    @classmethod
+    def _cast_raw_env(cls, raw_value: str, value_type: type) -> Any:
         if value_type is bool:
             return raw_value.lower() == 'true'
         if value_type is int:
             return int(raw_value)
         return raw_value
-
-    @staticmethod
-    def _extract_secret(sub_path: str):
-        path = Path(f'{DOCKER_SECRETS_DIR}/{ sub_path }')
-        if path.exists():
-            with Path.open(path) as f:
-                return f.read().rstrip('\n')
-        return None
 
 
 SETTINGS = Settings()
