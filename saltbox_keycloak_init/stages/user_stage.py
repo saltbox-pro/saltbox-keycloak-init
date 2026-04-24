@@ -1,11 +1,10 @@
 from saltbox_keycloak_init.config import Settings
 from saltbox_keycloak_init.manage.user_manager import UserManager
-from saltbox_keycloak_init.schema.client_schema import GRAFANA_ADMIN_ROLE, SALTBOX_ADMIN_ROLES
+from saltbox_keycloak_init.schema.client_schema import GRAFANA_ROLE_TO_DESC, SALTBOX_ROLE_TO_DESC
 from saltbox_keycloak_init.schema.user_schema import User
 
 
-async def build_user(settings: Settings) -> User:
-    password = await settings.saltbox_user_secret_meta.value
+async def build_user(settings: Settings, password: str) -> User:
     return User(
         username=settings.keycloak_user_name,
         email=settings.keycloak_user_email,
@@ -15,8 +14,7 @@ async def build_user(settings: Settings) -> User:
     )
 
 
-async def build_admin_user(settings: Settings) -> User:
-    password = await settings.keycloak_saltbox_admin_secret_meta.value
+async def build_admin_user(settings: Settings, password: str) -> User:
     return User(
         username=settings.keycloak_admin_name,
         email=settings.keycloak_admin_email,
@@ -27,6 +25,7 @@ async def build_admin_user(settings: Settings) -> User:
 
 
 async def setup_users(
+    *,
     user_mgr: UserManager,
     settings: Settings,
     saltbox_uuid: str,
@@ -34,20 +33,22 @@ async def setup_users(
 ) -> None:
 
     if settings.keycloak_user_name:
-        user = await build_user(settings)
+        user_password = await settings.saltbox_user_secret_meta.value
+        user = await build_user(settings, user_password)
         await user_mgr.ensure_user(user)
 
     if settings.keycloak_admin_name:
-        admin_user = await build_admin_user(settings)
+        admin_password = await settings.keycloak_saltbox_admin_secret_meta.value
+        admin_user = await build_admin_user(settings, admin_password)
         admin_id = await user_mgr.ensure_user(admin_user)
         await user_mgr.assign_client_roles(
-            admin_id,
-            saltbox_uuid,
-            SALTBOX_ADMIN_ROLES
+            user_id=admin_id,
+            client_uuid=saltbox_uuid,
+            role_names=list(SALTBOX_ROLE_TO_DESC)
         )
         if grafana_uuid:
             await user_mgr.assign_client_roles(
-                admin_id,
-                grafana_uuid,
-                [GRAFANA_ADMIN_ROLE]
+                user_id=admin_id,
+                client_uuid=grafana_uuid,
+                role_names=list(GRAFANA_ROLE_TO_DESC)
             )

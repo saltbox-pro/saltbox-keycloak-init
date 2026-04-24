@@ -1,3 +1,5 @@
+from urllib.parse import quote
+
 from saltbox_keycloak_init.config import logger
 from saltbox_keycloak_init.manage.base_manager import BaseManager
 from saltbox_keycloak_init.schema.user_schema import User
@@ -36,6 +38,7 @@ class UserManager(BaseManager):
         role_names: list[str],
     ) -> None:
         for role_name in role_names:
-            role_representation = await self.admin.a_get_client_role(client_uuid, role_name)
+            coded_role_name = quote(role_name, safe='')
+            role_representation = await self.admin.a_get_client_role(client_uuid, coded_role_name)
             await self.admin.a_assign_client_role(user_id, client_uuid, [role_representation])
             logger.info(f'Role {role_name!r} from client UUID {client_uuid!r} assigned to user {user_id!r}')

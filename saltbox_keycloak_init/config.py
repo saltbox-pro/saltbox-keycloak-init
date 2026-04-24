@@ -35,6 +35,10 @@ class Settings:
     keycloak_admin_secret_meta: SecretMeta = SecretMeta('keycloak_admin_password')
     keycloak_client_saltbox_core_secret_meta: SecretMeta = SecretMeta('keycloak_client_saltbox_core_password')
 
+    keycloak_client_grafana: str = ''
+    keycloak_client_grafana_secret_meta: SecretMeta = SecretMeta(
+        'keycloak_client_grafana_password', is_addon_module=True)
+
     keycloak_user_name: str = ''
     keycloak_user_email: str = ''
     keycloak_user_firstname: str = ''
@@ -47,12 +51,8 @@ class Settings:
     keycloak_admin_lastname: str = ''
     keycloak_saltbox_admin_secret_meta: SecretMeta = SecretMeta('saltbox_admin_password')
 
-    keycloak_client_grafana_secret_meta: SecretMeta = SecretMeta(
-        'keycloak_client_grafana_password', is_addon_module=True)
-
     keycloak_client_direct_access: bool = False
     keycloak_strict_role_check: bool = True
-
     keycloak_init_log_level: str = 'INFO'
 
     def __init__(self):

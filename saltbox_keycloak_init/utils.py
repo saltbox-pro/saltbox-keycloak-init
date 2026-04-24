@@ -4,6 +4,7 @@ from saltbox_keycloak_init.config import logger
 
 
 async def verify_client_roles(
+    *,
     admin: KeycloakAdmin,
     realm_name: str,
     username: str,

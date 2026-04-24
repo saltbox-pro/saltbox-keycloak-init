@@ -40,24 +40,24 @@ async def init() -> None:
 
     user_realm = await create_user_realm()
     client_manager = ClientManager(user_realm, SETTINGS)
-    saltbox_uuid, grafana_uuid = await setup_clients(client_manager, SETTINGS)
+    saltbox_uuid, grafana_uuid = await setup_clients(client_mgr=client_manager, settings=SETTINGS)
 
     user_manager = UserManager(user_realm, SETTINGS)
     await setup_users(
-        user_manager,
-        SETTINGS,
-        saltbox_uuid,
-        grafana_uuid
+        user_mgr=user_manager,
+        settings=SETTINGS,
+        saltbox_uuid=saltbox_uuid,
+        grafana_uuid=grafana_uuid
     )
-    await client_manager.update_direct_access(saltbox_uuid, SETTINGS.keycloak_client_direct_access)
+    await client_manager.update_direct_access(client_uuid=saltbox_uuid, enabled=SETTINGS.keycloak_client_direct_access)
 
     if SETTINGS.keycloak_strict_role_check:
         await verify_roles(
-            user_realm,
-            SETTINGS.keycloak_realm,
-            SETTINGS.keycloak_admin_name,
-            saltbox_uuid,
-            grafana_uuid
+            admin=user_realm,
+            realm_name=SETTINGS.keycloak_realm,
+            admin_name=SETTINGS.keycloak_admin_name,
+            saltbox_uuid=saltbox_uuid,
+            grafana_uuid=grafana_uuid
         )
 
 
