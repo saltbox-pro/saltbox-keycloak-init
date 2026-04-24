@@ -10,14 +10,14 @@ import anyio
 class SecretMeta:
     name: str
     is_addon_module: bool = False
-    base_dir: anyio.Path = '/run/secrets'
+    base_dir: anyio.Path = '/run/secrets'  # type: ignore
 
     @property
     async def absolute_path(self) -> anyio.Path:
         return anyio.Path(f'{self.base_dir}/{self.name}')
 
     @property
-    async def value(self) -> str | None:
+    async def value(self) -> str:
         path = await self.absolute_path
         if await path.exists():
             trailing_secret = await path.read_text()
@@ -25,7 +25,7 @@ class SecretMeta:
         if not self.is_addon_module:
             msg = f'Secret {path!r} not exist'
             raise ValueError(msg)
-        return None
+        return ''
 
 
 class Settings:
@@ -55,7 +55,7 @@ class Settings:
     keycloak_strict_role_check: bool = True
     keycloak_init_log_level: str = 'INFO'
 
-    def __init__(self):
+    def __init__(self) -> None:
         for field, field_type in self.__annotations__.items():
             field_to_uppercase = field.upper()
             raw_env = os.environ.get(field_to_uppercase)
@@ -72,7 +72,7 @@ class Settings:
         return raw_value
 
 
-SETTINGS = Settings()
+SETTINGS: Settings = Settings()
 _main_logger_name = __name__.split('.')[0]
 
 

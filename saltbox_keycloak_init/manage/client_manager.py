@@ -19,6 +19,9 @@ class ClientManager(BaseManager):
         }
         await self.admin.a_create_client(payload, skip_exists=False)
         client_uuid = await self.admin.a_get_client_id(client.client_id)
+        if client_uuid is None:
+            msg = f'Not found client UUID by {client.client_id!r} client name'
+            raise KeycloakGetError(msg)
 
         logger.info(f'Client {client.client_id!r} created with UUID {client_uuid!r}')
         return client_uuid
