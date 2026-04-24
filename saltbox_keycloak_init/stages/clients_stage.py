@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-import aiofiles
+import aiofiles  # type: ignore
 
 from saltbox_keycloak_init.config import Settings
 from saltbox_keycloak_init.manage.client_manager import ClientManager
@@ -19,7 +19,7 @@ PATH_TO_GRAFANA_CLIENT_CONFIG = BASE_DIR / 'client.d' / 'grafana_client.json'
 PATH_TO_SALTBOX_CORE_CLIENT_CONFIG = BASE_DIR / 'client.d' / 'saltbox_core_client.json'
 
 
-async def _load_client_config(path: Path) -> dict[str, Any]:
+async def _load_client_config(path: Path) -> Any:
     async with aiofiles.open(path) as f:
         payload = await f.read()
         return json.loads(payload)

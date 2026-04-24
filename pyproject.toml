@@ -19,6 +19,12 @@ Homepage = "https://saltbox.pro"
 Documentation = "https://saltbox.pro"
 Repository = "https://dev.saltbox.pro/saltbox/saltbox-keycloak-init"
 
+[project.optional-dependencies]
+lint = [
+    "ruff>=0.12.3",
+    "mypy>=1.20.0",
+]
+
 [build-system]
 requires = ["setuptools>=75.1.0", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
@@ -109,7 +115,6 @@ max-complexity = 10
 
 [tool.mypy]
 check_untyped_defs = true
-plugins = ["pydantic.mypy"]
 python_version = "3.12"
 ignore_missing_imports = false
 color_output = true
