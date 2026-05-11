@@ -25,10 +25,22 @@ async def create_user_realm() -> KeycloakAdmin:
     expected_realm = SETTINGS.keycloak_realm
     if expected_realm not in realm_names:
         logger.info(f'Realm {expected_realm!r} created')
-        await master_realm.a_create_realm({
-            "realm": SETTINGS.keycloak_realm, "enabled": True},
-            skip_exists=True
-        )
+        realm_payload = {
+            'realm': SETTINGS.keycloak_realm,
+            'enabled': True,
+        }
+        await master_realm.a_create_realm(realm_payload, skip_exists=True)
+        brute_force_payload = {
+            **realm_payload,
+            'bruteForceProtected': True,
+            'failureFactor': SETTINGS.keycloak_bf_failure_factor,
+            'maxDeltaTimeSeconds': SETTINGS.keycloak_bf_max_delta_time_sc,
+            'maxFailureWaitSeconds': SETTINGS.keycloak_bf_max_failure_wait_sc,
+            'waitIncrementSeconds': SETTINGS.keycloak_bf_wait_increment_sc,
+            'minimumQuickLoginWaitSeconds': SETTINGS.keycloak_bf_min_quick_login_wait_sc,
+            'quickLoginCheckMilliSeconds': SETTINGS.keycloak_bf_quick_login_check_msc,
+        }
+        await master_realm.a_update_realm(expected_realm, brute_force_payload)
     else:
         logger.info(f'Realm {expected_realm!r} already exist')
 
@@ -57,7 +69,7 @@ async def init() -> None:
             realm_name=SETTINGS.keycloak_realm,
             admin_name=SETTINGS.keycloak_admin_name,
             saltbox_uuid=saltbox_uuid,
-            grafana_uuid=grafana_uuid
+            grafana_uuid=grafana_uuid,
         )
 
 
