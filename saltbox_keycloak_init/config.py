@@ -9,7 +9,6 @@ import anyio
 DEFAULT_MAX_FAILURE_WAIT_TIME = datetime.timedelta(hours=24)
 DEFAULT_WAIT_INCREMENT_TIME = datetime.timedelta(hours=24)
 DEFAULT_MIN_QUICK_LOGIN_WAIT_TIME = datetime.timedelta(minutes=1)
-DEFAULT_QUICK_LOGIN_CHECK_TIME = datetime.timedelta(milliseconds=1000)
 DEFAULT_MAX_DELTA_TIME = datetime.timedelta(hours=1)
 DEFAULT_FAILURE_FACTOR = 5
 
