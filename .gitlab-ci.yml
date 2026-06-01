@@ -18,13 +18,16 @@ variables:
   stage: lint
   variables:
     PIP_CACHE_DIR: '$CI_PROJECT_DIR/.cache/pip'
+    APK_CACHE_DIR: '$CI_PROJECT_DIR/.cache/apk'
   image: python:3.12-alpine
   before_script:
-    - apk add git
+    - mkdir -p "$APK_CACHE_DIR"
+    - apk add --cache-dir "$APK_CACHE_DIR" git
     - pip3 install .[lint]
   cache:
     paths:
-      - '.cache/pip/'
+      - '$APK_CACHE_DIR'
+      - '$PIP_CACHE_DIR'
   rules:
     - if: $LINTING_ENABLED == 'true'
 
