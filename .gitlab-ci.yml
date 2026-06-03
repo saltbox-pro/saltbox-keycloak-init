@@ -3,10 +3,13 @@
 include:
   - project: 'saltbox/ci-lib'
     file: 'build-image.yml'
+  - project: 'saltbox/ci-lib'
+    file: 'set-version.yml'
 
 
 stages:
   - lint
+  - bump-version
   - build
 
 
@@ -32,19 +35,6 @@ variables:
     - if: $LINTING_ENABLED == 'true'
 
 
-.default-build:
-  extends: .build-image
-  dependencies: []
-
-
-.build-keycloak-init-image:
-  extends: .default-build
-  stage: build
-  variables:
-    DOCKERFILE: 'Dockerfile'
-    TARGET: keycloak-init
-
-
 Ruff:
   extends: .lint-job
   script: ruff check saltbox_keycloak_init
@@ -55,17 +45,16 @@ Mypy:
   script: mypy saltbox_keycloak_init
 
 
-Build keycloak-init image for tag:
-  extends: .build-keycloak-init-image
+Bump Keycloak Init version:
+  stage: bump-version
+  extends: .set-backend-version
   variables:
-    IMAGE_TAG: '$CI_COMMIT_TAG'
-  rules:
-    - if: '$CI_COMMIT_TAG'
+    INNER_VERSION_FILE: 'saltbox_keycloak_init/__init__.py'
 
 
-Build keycloak-init image for branch:
-  extends: .build-keycloak-init-image
+Build Keycloak Init image:
+  extends: .build-image
+  stage: build
   variables:
-    IMAGE_TAG: '$CI_COMMIT_BRANCH'
-  rules:
-    - if: '$CI_COMMIT_BRANCH'
+    DOCKERFILE: 'Dockerfile'
+    TARGET: keycloak-init

@@ -1,4 +1,5 @@
 /.gitlab-ci-local
 /.idea/
 /.env/
+/.gitlab-ci-local
 /saltbox_keycloak_init.egg-info/
