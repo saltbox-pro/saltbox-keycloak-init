@@ -17,6 +17,8 @@ EOF
 WORKDIR /build
 COPY pyproject.toml LICENSE.txt README.md ./
 COPY saltbox_keycloak_init/ saltbox_keycloak_init/
+COPY saltbox_keycloak_init/client.d/themes/ /srv/keycloak/themes
+
 RUN python3 -m pip install --no-cache-dir .
 WORKDIR /
 
@@ -37,6 +39,7 @@ ENV KEYCLOAK_ADMIN_LASTNAME=''
 ENV KEYCLOAK_CLIENT_DIRECT_ACCESS='false'
 ENV KEYCLOAK_STRICT_ROLE_CHECK='true'
 ENV KEYCLOAK_INIT_LOG_LEVEL='INFO'
+ENV KEYCLOAK_LOGIN_THEME='saltbox'
 
 ENTRYPOINT ["saltbox-keycloak-init"]
 
@@ -56,6 +59,7 @@ EOF
 WORKDIR /app
 COPY pyproject.toml LICENSE.txt README.md ./
 COPY saltbox_keycloak_init/ saltbox_keycloak_init/
+COPY saltbox_keycloak_init/client.d/themes/ /srv/keycloak/themes
 
 RUN python3 -m pip install --no-cache-dir -e .
 

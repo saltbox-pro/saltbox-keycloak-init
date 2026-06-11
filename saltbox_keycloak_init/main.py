@@ -28,6 +28,7 @@ async def create_user_realm() -> KeycloakAdmin:
         realm_payload = {
             'realm': SETTINGS.keycloak_realm,
             'enabled': True,
+            'loginTheme': SETTINGS.keycloak_login_theme
         }
         await master_realm.a_create_realm(realm_payload, skip_exists=True)
         brute_force_payload = {
