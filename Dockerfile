@@ -17,7 +17,6 @@ EOF
 WORKDIR /build
 COPY pyproject.toml LICENSE.txt README.md ./
 COPY saltbox_keycloak_init/ saltbox_keycloak_init/
-COPY saltbox_keycloak_init/client.d/themes/ /srv/keycloak/themes
 
 RUN python3 -m pip install --no-cache-dir .
 WORKDIR /
@@ -59,7 +58,6 @@ EOF
 WORKDIR /app
 COPY pyproject.toml LICENSE.txt README.md ./
 COPY saltbox_keycloak_init/ saltbox_keycloak_init/
-COPY saltbox_keycloak_init/client.d/themes/ /srv/keycloak/themes
 
 RUN python3 -m pip install --no-cache-dir -e .
 
