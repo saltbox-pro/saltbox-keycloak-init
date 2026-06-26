@@ -63,6 +63,8 @@ class Settings:
     keycloak_strict_role_check: bool = True
     keycloak_init_log_level: str = 'INFO'
     keycloak_login_theme: str = 'saltbox'
+    keycloak_supported_locales: str = 'ru, en'
+    keycloak_default_locale: str = 'ru'
 
     # Brute Forcing
     keycloak_bf_max_failure_wait_sc: int = int(DEFAULT_MAX_FAILURE_WAIT_TIME.total_seconds())

@@ -25,10 +25,14 @@ async def create_user_realm() -> KeycloakAdmin:
     expected_realm = SETTINGS.keycloak_realm
     if expected_realm not in realm_names:
         logger.info(f'Realm {expected_realm!r} created')
+        sup_loc = [i.strip() for i in SETTINGS.keycloak_supported_locales.split(',')]
         realm_payload = {
             'realm': SETTINGS.keycloak_realm,
             'enabled': True,
-            'loginTheme': SETTINGS.keycloak_login_theme
+            'loginTheme': SETTINGS.keycloak_login_theme,
+            'internationalizationEnabled': True,
+            'supportedLocales': sup_loc,
+            'defaultLocale': SETTINGS.keycloak_default_locale,
         }
         await master_realm.a_create_realm(realm_payload, skip_exists=True)
         brute_force_payload = {
