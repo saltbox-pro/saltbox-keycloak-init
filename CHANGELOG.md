@@ -5,7 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [UNRELEASED]
+## [Unreleased]
+
+### Added
+
+### Changed
+
+### Fixed
+
+---
+
+## [0.3.0] - 2026-07-10
+
+### Added
+
+- Login theme and internationalization support applied during realm creation: `KEYCLOAK_LOGIN_THEME`,
+  `KEYCLOAK_SUPPORTED_LOCALES`, and `KEYCLOAK_DEFAULT_LOCALE` env vars.
+- CI `bump-version` stage for automated version file updates via shared `set-version` CI template.
+
+### Changed
+
+- Switched CI lint toolchain from pip to uv (`uv sync` / `uv run`); added APK and uv layer caching.
+- Simplified CI build pipeline: merged separate tag/branch build jobs into a single `Build Keycloak Init image` job.
+- Moved lint tool declarations from `[project.optional-dependencies]` to `[dependency-groups]` in `pyproject.toml`.
+
+### Removed
+
+- Unused login theme asset files.
+
+---
+
+## [0.2.0]
 
 ### Added
 
