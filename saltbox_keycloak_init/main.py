@@ -1,6 +1,6 @@
 import asyncio
 
-from keycloak import KeycloakAdmin, KeycloakAuthenticationError
+from keycloak import KeycloakAdmin, KeycloakAuthenticationError, KeycloakPostError, KeycloakConnectionError
 
 from saltbox_keycloak_init.config import SETTINGS, logger
 from saltbox_keycloak_init.manage.client_manager import ClientManager
@@ -78,20 +78,51 @@ async def init() -> None:
         )
 
 
-async def init_with_retry(retries: int = 10, delay: float = 5.0) -> None:
+async def init_with_retry(retries: int = 30, delay: float = 5.0) -> None:
     for attempt in range(1, retries + 1):
         try:
             await init()
             return
+        except KeycloakConnectionError as ex:
+            if attempt == retries:
+                raise
+
+            msg = (
+                f'Keycloak is unavailable: {ex}. ' +
+                f'Retry in {delay} sec'
+            )
+            logger.warning(msg)
+            await asyncio.sleep(delay)
+
+        except KeycloakPostError as ex:
+            if ex.response_code == 503:
+                if attempt == retries:
+                    raise
+
+                msg = (
+                    f'Keycloak bootstrap is in progress. ' +
+                    f'Retry in {delay} sec...'
+                )
+                logger.info(msg)
+                await asyncio.sleep(delay)
+
         except KeycloakAuthenticationError as ex:
             if attempt == retries:
                 raise
 
             msg = (
-                f'Attempt {attempt}/{retries} failed: {ex}. ' +
-                f'Retrying in {delay} sec ...'
+                f'Keycloak authentication failed: {ex}. ' +
+                f'Retrying in {delay} sec...'
             )
             logger.warning(msg)
+            await asyncio.sleep(delay)
+        
+        except Exception as ex:
+            msg = (
+                f'Attempt {attempt}/{retries} failed: {ex}. ' +
+                f'Retrying in {delay} sec...'
+            )
+            logger.error(msg)
             await asyncio.sleep(delay)
 
 
