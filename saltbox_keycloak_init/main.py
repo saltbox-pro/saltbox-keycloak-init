@@ -1,6 +1,6 @@
 import asyncio
 
-from keycloak import KeycloakAdmin, KeycloakAuthenticationError, KeycloakPostError, KeycloakConnectionError
+from keycloak import KeycloakAdmin, KeycloakAuthenticationError, KeycloakConnectionError, KeycloakPostError
 
 from saltbox_keycloak_init.config import SETTINGS, logger
 from saltbox_keycloak_init.manage.client_manager import ClientManager
@@ -100,7 +100,7 @@ async def init_with_retry(retries: int = 30, delay: float = 5.0) -> None:
                     raise
 
                 msg = (
-                    f'Keycloak bootstrap is in progress. ' +
+                    'Keycloak bootstrap is in progress. ' +
                     f'Retry in {delay} sec...'
                 )
                 logger.info(msg)
@@ -116,7 +116,7 @@ async def init_with_retry(retries: int = 30, delay: float = 5.0) -> None:
             )
             logger.warning(msg)
             await asyncio.sleep(delay)
-        
+
         except Exception as ex:
             msg = (
                 f'Attempt {attempt}/{retries} failed: {ex}. ' +
