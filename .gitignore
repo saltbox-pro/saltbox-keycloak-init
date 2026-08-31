@@ -4,3 +4,4 @@
 /.gitlab-ci-local
 /saltbox_keycloak_init.egg-info/
 .vscode/
+.DS_Store

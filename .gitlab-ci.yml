@@ -3,8 +3,12 @@
 include:
   - project: 'saltbox/ci-lib'
     file: 'build-image.yml'
+
   - project: 'saltbox/ci-lib'
     file: 'set-version.yml'
+
+  - project: 'saltbox/ci-lib'
+    file: 'mirror-repo.yml'
 
 
 stages:
@@ -59,3 +63,8 @@ Build Keycloak Init image:
   variables:
     DOCKERFILE: 'Dockerfile'
     TARGET: keycloak-init
+
+
+Mirror Repository:
+  extends: .mirror-repo
+  stage: build
