@@ -7,12 +7,6 @@ include:
   - project: 'saltbox/ci-lib'
     file: 'set-version.yml'
 
-  - project: 'saltbox/ci-lib'
-    file: 'mirror-repo.yml'
-
-  - project: 'saltbox/ci-lib'
-    file: 'close-github-pr.yml'
-
 
 stages:
   - lint
@@ -66,13 +60,3 @@ Build Keycloak Init image:
   variables:
     DOCKERFILE: 'Dockerfile'
     TARGET: keycloak-init
-
-
-Mirror Repository:
-  extends: .mirror-repo
-  stage: build
-
-
-Check for GitHub PR to close:
-  extends: .close-github-pr
-  stage: build
