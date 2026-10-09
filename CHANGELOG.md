@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Improved retry handling during Keycloak initialization: default retry
+  count raised to 30, and connection errors, 503 bootstrap-in-progress
+  responses, and unexpected exceptions are now retried (not just
+  authentication failures), with clearer log messages for each case.
+
 ### Fixed
 
 ---
