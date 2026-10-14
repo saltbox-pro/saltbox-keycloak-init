@@ -5,9 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [X.X.X] - YYYY-MM-DD
 
 ### Added
+
+### Changed
+
+### Fixed
+
+### Removed
+
+## [0.4.0] - 2026-10-13
 
 ### Changed
 
@@ -15,8 +23,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   count raised to 30, and connection errors, 503 bootstrap-in-progress
   responses, and unexpected exceptions are now retried (not just
   authentication failures), with clearer log messages for each case.
-
-### Fixed
 
 ---
 
