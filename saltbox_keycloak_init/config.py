@@ -17,7 +17,7 @@ DEFAULT_FAILURE_FACTOR = 5
 class SecretMeta:
     name: str
     is_addon_module: bool = False
-    base_dir: anyio.Path = '/run/secrets'  # type: ignore
+    base_dir: anyio.Path = '/run/secrets'  # type: ignore  # pyright: ignore[reportAssignmentType]
 
     @property
     async def absolute_path(self) -> anyio.Path:
@@ -65,6 +65,8 @@ class Settings:
     keycloak_login_theme: str = 'saltbox'
     keycloak_supported_locales: str = 'ru, en'
     keycloak_default_locale: str = 'ru'
+    keycloak_browser_flow_alias: str = 'saltbox browser'
+    keycloak_login_form_provider: str = 'saltbox-auth-username-password-form'
 
     # Brute Forcing
     keycloak_bf_max_failure_wait_sc: int = int(DEFAULT_MAX_FAILURE_WAIT_TIME.total_seconds())

@@ -4,8 +4,10 @@ from keycloak import KeycloakAdmin, KeycloakAuthenticationError, KeycloakConnect
 
 from saltbox_keycloak_init.config import SETTINGS, logger
 from saltbox_keycloak_init.manage.client_manager import ClientManager
+from saltbox_keycloak_init.manage.flow_manager import FlowManager
 from saltbox_keycloak_init.manage.user_manager import UserManager
 from saltbox_keycloak_init.stages.clients_stage import setup_clients
+from saltbox_keycloak_init.stages.flow_stage import setup_browser_flow
 from saltbox_keycloak_init.stages.user_stage import setup_users
 from saltbox_keycloak_init.stages.verify_stage import verify_roles
 
@@ -34,7 +36,7 @@ async def create_user_realm() -> KeycloakAdmin:
             'supportedLocales': sup_loc,
             'defaultLocale': SETTINGS.keycloak_default_locale,
         }
-        await master_realm.a_create_realm(realm_payload, skip_exists=True)
+        _ = await master_realm.a_create_realm(realm_payload, skip_exists=True)
         brute_force_payload = {
             **realm_payload,
             'bruteForceProtected': True,
@@ -45,7 +47,7 @@ async def create_user_realm() -> KeycloakAdmin:
             'minimumQuickLoginWaitSeconds': SETTINGS.keycloak_bf_min_quick_login_wait_sc,
             'quickLoginCheckMilliSeconds': SETTINGS.keycloak_bf_quick_login_check_msc,
         }
-        await master_realm.a_update_realm(expected_realm, brute_force_payload)
+        _ = await master_realm.a_update_realm(expected_realm, brute_force_payload)
     else:
         logger.info(f'Realm {expected_realm!r} already exist')
 
@@ -56,6 +58,9 @@ async def create_user_realm() -> KeycloakAdmin:
 async def init() -> None:
 
     user_realm = await create_user_realm()
+    flow_manager = FlowManager(user_realm, SETTINGS)
+    await setup_browser_flow(flow_mgr=flow_manager, settings=SETTINGS)
+
     client_manager = ClientManager(user_realm, SETTINGS)
     saltbox_uuid, grafana_uuid = await setup_clients(client_mgr=client_manager, settings=SETTINGS)
 

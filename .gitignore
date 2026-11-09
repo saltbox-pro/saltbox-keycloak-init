@@ -5,4 +5,5 @@
 /saltbox_keycloak_init.egg-info/
 .vscode/
 */__pycache__
+*__pycache__
 .DS_Store
